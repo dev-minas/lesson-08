@@ -39,7 +39,7 @@ function App() {
 
   return (
     <>
-      <h4>Current task: {crrTask} {crrTaskDate}</h4>
+      <h4>Current task: {crrTask} {crrTaskDate} updated</h4>
       <ul>
         {tasks.map((task) => (
             <li className={"taskLi"} style={{ backgroundColor: priorityColors[task.priority] }}>
