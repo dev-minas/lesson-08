@@ -1,58 +1,69 @@
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import './App.css'
-
-const tasks = [
-  {
-    id: 1,
-    title: "Make shopping",
-    isDone: false,
-    addedAt: "1 сентября",
-    priority: 0,
-  },
-  {
-    id: 2,
-    title: "Полить цветы",
-    isDone: true,
-    addedAt: "2 сентября",
-    priority: 3,
-  },
-  {
-    id: 3,
-    title: "Сходить на тренировку",
-    isDone: false,
-    addedAt: "3 сентября",
-    priority: 4,
-  },
-]
-
-const priorityColors = [ "#ffffff", "#ffd7b5", "#ffb38a", "#ff9248", "#ff6700" ]
-
 
 function App() {
 
-  const [crrTask, setCrrTask] = useState("not selected")
-  const [crrTaskDate, setCrrTaskDate] = useState("not selected")
+    const [traks, setTracks] = useState(null)
+    const [selectedTrackId, setSelectedTrackId] = useState(null)
+    const [selectedTrack, setSelectedTrack] = useState(null)
 
-  if (tasks == null) return (<> loading </>)
+    useEffect(() => {
 
-  if (tasks.length == 0) return (<> empty list </>)
+        fetch('https://musicfun.it-incubator.app/api/1.0/playlists/tracks', {
+            headers: {
+                'api-key': '78305846-c525-416b-9329-44c1be4834e5'
+            }
+        }).then(res => res.json()).then(json => setTracks(json.data))
+    }, [])
 
-  return (
-    <>
-      <h4>Current task: {crrTask} {crrTaskDate} updated</h4>
-      <ul>
-        {tasks.map((task) => (
-            <li className={"taskLi"} style={{ backgroundColor: priorityColors[task.priority] }}>
-              <div className={ task.isDone ? "td" : undefined }>{task.title}</div>
-              <div><input type={"checkbox"} checked={task.isDone}/></div>
-              <div>{task.addedAt}</div>
-              <button onClick={ () => { setCrrTask(task.title); } }> update task </button>
-              <button onClick={ () => { setCrrTaskDate(task.addedAt); } }> update date </button>
-            </li>
-        ))}
-      </ul>
-    </>
-  )
+    if (traks == null) return (<> loading </>)
+
+    if (traks.length == 0) return (<> empty list </>)
+
+    return (
+        <>
+            <div style={{display: "flex", gap: "30px"}}>
+                <h4>Tracks</h4>
+                <ul>
+                    {traks.map((track) => (
+                        <li key={track.id} style={{border: track.id === selectedTrackId ? "1px solid orange" : "",}}>
+                            <div>{track.attributes.title.substring(0, 50)}</div>
+                            <audio controls src={track.attributes.attachments[0].url}></audio>
+                            <button onClick={() => {
+                                setSelectedTrackId(track.id)
+                                const loading = {'attributes' : {'lyrics' : 'loading'}}
+                                setSelectedTrack(loading);
+                                fetch(
+                                    "https://musicfun.it-incubator.app/api/1.0/playlists/tracks/" + track.id,
+                                    {
+                                        headers: { "api-key": "78305846-c525-416b-9329-44c1be4834e5" },
+                                    },
+                                )
+                                    .then((res) => res.json())
+                                    .then((json) => {
+                                        setSelectedTrack(json.data)
+                                    })
+                            }}> magic
+                            </button>
+                        </li>
+                    ))}
+                </ul>
+                <div>
+                    <h3>Details</h3>
+                    {selectedTrack === null ? (
+                        "Track is not selected"
+                    ) : (
+                        <div>
+                            <h3>{selectedTrack.attributes.title}</h3>
+                            <h4>Lyrics</h4>
+                            <p>{selectedTrack.attributes.lyrics ?? "no lyrics"}</p>
+                        </div>
+                    )}
+                </div>
+
+            </div>
+        </>
+    )
 }
 
 export default App
