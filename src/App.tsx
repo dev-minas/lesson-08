@@ -16,6 +16,23 @@ function App() {
         }).then(res => res.json()).then(json => setTracks(json.data))
     }, [])
 
+    useEffect(() => {
+
+        if (!selectedTrackId) {
+            return
+        }
+        fetch(
+            "https://musicfun.it-incubator.app/api/1.0/playlists/tracks/" + selectedTrackId,
+            {
+                headers: { "api-key": "78305846-c525-416b-9329-44c1be4834e5" },
+            },
+        )
+            .then((res) => res.json())
+            .then((json) => {
+                setSelectedTrack(json.data)
+            })
+    }, [selectedTrackId])
+
     if (traks == null) return (<> loading </>)
 
     if (traks.length == 0) return (<> empty list </>)
@@ -31,18 +48,9 @@ function App() {
                             <audio controls src={track.attributes.attachments[0].url}></audio>
                             <button onClick={() => {
                                 setSelectedTrackId(track.id)
-                                const loading = {'attributes' : {'lyrics' : 'loading'}}
+                                const loading = {'attributes' : {'lyrics' : 'loading...'}}
                                 setSelectedTrack(loading);
-                                fetch(
-                                    "https://musicfun.it-incubator.app/api/1.0/playlists/tracks/" + track.id,
-                                    {
-                                        headers: { "api-key": "78305846-c525-416b-9329-44c1be4834e5" },
-                                    },
-                                )
-                                    .then((res) => res.json())
-                                    .then((json) => {
-                                        setSelectedTrack(json.data)
-                                    })
+
                             }}> magic
                             </button>
                         </li>
